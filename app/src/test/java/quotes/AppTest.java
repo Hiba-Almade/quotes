@@ -6,10 +6,11 @@ package quotes;
 import com.google.gson.Gson;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -33,6 +34,51 @@ public class AppTest {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test public void readFromApiTest() throws IOException {
+        Gson gson = new Gson();
+        URL url = new URL("https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+
+        if (connection.getResponseCode() == 200) {
+
+            InputStream inputStream = connection.getInputStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader in = new BufferedReader(inputStreamReader);
+            QuotesApi quotesApi = gson.fromJson(in, QuotesApi.class);
+            assertNotNull(quotesApi);
+            in.close();
+
+        }
+    }
+
+
+    @Test public void readFromApiWriteTest() throws IOException {
+        Gson gson = new Gson();
+        URL url = new URL("https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+
+        if (connection.getResponseCode() == 200) {
+
+            InputStream inputStream = connection.getInputStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader in = new BufferedReader(inputStreamReader);
+            QuotesApi quotesApi = gson.fromJson(in, QuotesApi.class);
+            in.close();
+
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("ApiQuotes.json"));
+            String newQuotes = gson.toJson(quotesApi);
+            bufferedWriter.write(newQuotes);
+            assertNotNull(newQuotes);
+            bufferedWriter.close();
+
+
         }
     }
 }
